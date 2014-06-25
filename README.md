@@ -28,4 +28,6 @@ Currently, list problems 1 through 20 are solved, and available in the file `lis
 I hope that these solutions will be of inspiration to someone who, like me, decides to learn Erlang.
 
 <br>
+<br>
 <sup>*</sup> I must admit, however, that reading Prolog code I can mostly see what it is suggesting but I don't have a clue how it does what it does :)
+
