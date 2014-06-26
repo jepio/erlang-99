@@ -2,7 +2,12 @@
 -export([last/1,penlast/1,element_at/2,numelements/1,reverse/1,
          pali/1,flat/1,compress/1,pack/1,encode/1,encode_mod/1,
          decode/1,direct_enc/1,dupli/1,dupli_n/2,drop/2,split/2,
-         slice/3,rotate/2,remove_at/2]).
+         slice/3,rotate/2,remove_at/2,insert_at/3,range/2,
+         rnd_select/2,draw_rnd/2,rnd_permu/1,comb/2,group3/1,
+         group/2,lsort/1,fsort/1]).
+         
+%% For testing
+%% -compile(export_all).
 %% A collection of solutions to the list-problems found on
 %% https://sites.google.com/site/prologsite/prolog-problems
 
@@ -212,3 +217,152 @@ remove_at([H|T],1,Acc) ->
     [H, reverse(Acc) ++ T];
 remove_at([H|T],N,Acc) when N > 0 ->
     remove_at(T,N-1,[H|Acc]).
+    
+%% 1.21 Insert element at given position
+insert_at(X,L,N) ->
+    insert_at(X,L,N,[]).
+insert_at([],L,_,Acc) ->
+    reverse([L|Acc]);
+insert_at([H|T],L,1,Acc) ->
+    reverse(prepend(T,[H,L|Acc]));
+insert_at([H|T],L,N,Acc) ->
+    insert_at(T,L,N-1,[H|Acc]).
+    
+%% 1.22 Create list of range
+range(N,M) when N < M ->
+    range(N,M,[]).
+range(M,M,Acc) ->
+    reverse([M|Acc]);
+range(N,M,Acc) ->
+    range(N+1,M,[N|Acc]).
+    
+%% 1.23 Random select
+rnd_select(X,N) when N =< length(X) ->
+    random:seed(now()),
+    rnd_select(X,N,[]).
+rnd_select(_,0,Acc) ->
+    Acc;
+rnd_select(X,N,Acc) ->
+    I = random:uniform(numelements(X)),
+    [Element,List]=remove_at(X,I),
+    rnd_select(List,N-1,[Element|Acc]).
+    
+%% 1.24 Draw random from range
+draw_rnd(N,Max) when N =< Max ->
+    R = range(1,Max),
+    rnd_select(R,N).
+    
+%% 1.25 Random permutation
+rnd_permu(X) ->
+    N = numelements(X),
+    rnd_select(X,N).
+    
+%% 1.26 All combinations
+comb(0,_) ->
+    [[]];
+comb(_,[]) ->
+    [];
+comb(N,[H|T]) ->
+% This expression is brilliant, too bad I didn't come up with it myself :(
+    [[H|L] || L <- comb(N-1,T)] ++ comb(N,T).
+    
+%% 1.27a) Group a list of 9 into disjoint subsets of 2,3 and 4.
+group3(X) ->
+    G1 = selectN(2,[X],[[]]),
+    R1 = subtract(X,G1),
+    G2 = selectN(3,R1,G1),
+    R2 = subtract(X,G2),
+    selectN(4,R2,G2).
+
+selectN(N,X,Y) ->
+    selectN(N,X,Y,[]).
+selectN(_,[],[],Acc) ->
+    Acc;
+selectN(N,[H|T],[AH|AT],Acc) ->
+    X = [ AH++[L] || L <- comb(N,H) ],
+    selectN(N,T,AT,Acc++X).
+
+subtract(X,G) ->
+    [ X -- flat(L) || L <- G].
+
+%% 1.27b) generalized version of the above.
+group(List,GroupNums) ->
+    group(List,[[]],GroupNums,[List]).
+group(_,G1,[],_) ->
+    G1;
+group(List,G1,[GroupHead|GroupTail],R1) ->
+    G2 = selectN(GroupHead,R1,G1),
+    R2 = subtract(List,G2),
+    group(List,G2,GroupTail,R2).
+% This time I can say I did it on my own :)
+
+%% 1.28a) Sort lists according to length with qsort :)
+lsort(L) ->
+    KL = makekeys(L),
+    SKL = keysort(KL),
+    removekeys(SKL).
+
+% make lenght keys on all elements
+makekeys(L) ->
+    makekeys(L,[]).
+makekeys([],Acc) ->
+    reverse(Acc);
+makekeys([H|T],Acc) ->
+    makekeys(T,[[length(H),H]|Acc]).
+ 
+% remove keys from elements 
+removekeys(L) ->
+    removekeys(L,[]).
+removekeys([],Acc) ->
+    reverse(Acc);
+removekeys([H|T],Acc) ->
+    [_,RemovedKey] = H,
+    removekeys(T,[RemovedKey|Acc]).
+
+% sort according to key    
+keysort([]) ->
+    [];
+keysort([H|T]) ->
+    [Piv,_] = H,
+    Lon = [ [Len,X] || [Len,X] <- T, Len > Piv],
+    Sho = [ [Len,X] || [Len,X] <- T, Len  < Piv],
+    Eq = [ [Len,X] || [Len,X] <- T, Len  =:= Piv],
+    keysort(Sho) ++ [H|Eq] ++ keysort(Lon).
+ 
+%% 1.28b) Sort lists according to the frequency
+fsort(L) ->
+    KL = makekeys2(L),
+    SKL = keysort(KL),
+    removekeys(SKL).
+
+% make frequency keys on all elements
+makekeys2(L) ->
+    Lengths = find_length(L),
+    F = find_freq(Lengths),
+    makekeys2(L,F,[]).
+makekeys2([],_,Acc) ->
+    reverse(Acc);
+makekeys2([H|T],F,Acc) ->
+    makekeys2(T,F,[[get_freq(H,F),H]|Acc]).
+    
+% various useful functions:
+% create list of sublist lengths
+find_length(List) ->
+    find_length(List,[]).
+find_length([],Acc) ->
+    reverse(Acc);
+find_length([H|T],Acc) ->
+    find_length(T,[length(H)|Acc]).
+
+% create an encoded list of frequencies of lengths
+find_freq(Lengths) ->
+    Sorted = lists:sort(Lengths),
+    encode(Sorted).
+
+% get the sublist frequency number
+get_freq(H,F) when is_list(H) ->
+    get_freq(length(H),F);
+get_freq(L,[[N,L]|_]) ->
+    N;
+get_freq(L,[_|T]) ->
+    get_freq(L,T).

@@ -22,7 +22,8 @@ $ erl
 Once I'm done with all the problems I will consider writing unit tests for all functions.
 
 ## Progress
-Currently, list problems 1 through 20 are solved, and available in the file `list_prb.erl`.
+* List problems - done, available in the file `list_prb.erl`.
+* Arithmetic problems - not yet started
 
 ### Final words
 I hope that these solutions will be of inspiration to someone who, like me, decides to learn Erlang.
