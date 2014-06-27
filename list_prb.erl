@@ -229,10 +229,10 @@ insert_at([H|T],L,N,Acc) ->
     insert_at(T,L,N-1,[H|Acc]).
     
 %% 1.22 Create list of range
-range(N,M) when N < M ->
+range(N,M) ->
     range(N,M,[]).
-range(M,M,Acc) ->
-    reverse([M|Acc]);
+range(N,M,Acc) when N > M ->
+    reverse(Acc);
 range(N,M,Acc) ->
     range(N+1,M,[N|Acc]).
     
