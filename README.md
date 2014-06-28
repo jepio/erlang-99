@@ -23,7 +23,8 @@ Once I'm done with all the problems I will consider writing unit tests for all f
 
 ## Progress
 * List problems - done, available in the file `list_prb.erl`.
-* Arithmetic problems - not yet started
+* Arithmetic problems - done, available in the file `arith_prb.erl`.
+* Logic and Codes problems - next.
 
 ### Final words
 I hope that these solutions will be of inspiration to someone who, like me, decides to learn Erlang.
