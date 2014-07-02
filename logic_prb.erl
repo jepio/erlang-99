@@ -1,6 +1,6 @@
 -module(logic_prb).
 -export([land/2,lor/2,lnot/1,lnand/2,lnor/2,lxor/2,lequ/2,table/1,logic_table/1,
-         limpl/2,grey_code/1]).
+         limpl/2,grey_code/1,huffman_test/0,huffman_code/1]).
 %%-compile(export_all).
 
 
@@ -78,6 +78,34 @@ logic_table(N) ->
 grey_code(1) ->
     ["0","1"];
 grey_code(N) ->
-    FirstPart = [string:concat("0",X) || X <- grey_code(N-1)],
-    SecondPart = [string:concat("1",X) || X <- lists:reverse(grey_code(N-1))],
+    FirstPart=[string:concat("0",X) || X <- grey_code(N-1)],
+    SecondPart=[string:concat("1",X) || X <- lists:reverse(grey_code(N-1))],
     FirstPart ++ SecondPart.
+
+
+%% 3.05 Huffman code (this one has a difficulty level of ***, so let's see how
+%% it goes).
+%%
+
+huffman_test() ->
+    Frequencies = [{a,45},{b,13},{c,12},{d,16},{e,9},{f,5}],
+    huffman_code(Frequencies).
+
+huffman_code(List) ->
+    Tree = tree(List),
+    Encoding = encode(Tree),
+    Encoding.
+
+tree([{N, _}|[]]) ->
+    N;
+tree(N) ->
+    [{N1,C1},{N2,C2}|Rest] = lists:keysort(2,N),
+    tree([{{N1,N2},C1+C2}|Rest]).
+
+encode({Left,Right}) ->
+    encode(Left,"1") ++ encode(Right,"0").
+encode({Left,Right},Code) ->
+    encode(Left,Code++"1") ++ encode(Right,Code++"0");
+encode(Value,Code) ->
+    [{Value,Code}].
+
