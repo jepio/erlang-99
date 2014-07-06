@@ -1,6 +1,6 @@
 -module(logic_prb).
 -export([land/2,lor/2,lnot/1,lnand/2,lnor/2,lxor/2,lequ/2,table/1,logic_table/1,
-         limpl/2,grey_code/1,huffman_test/0,huffman_code/1]).
+         limpl/2,grey_code/1,huffman_test/0,huffman_code/1,general_table/1]).
 %%-compile(export_all).
 
 
@@ -42,7 +42,7 @@ lequ(_X,_Y) -> false.
 %% Usage:
 %% logic_prb:table(fun logic_prb:limpl/2).
 table(F) when is_function(F,2) ->
-    Logic = logic_table(2), % was only added later 
+    Logic = logic_table(2), % was only added later
     table(Logic,F).
 
 table([H|T],F) ->
@@ -60,9 +60,22 @@ table([],_) ->
 
 %% 3.03 Generalize the truth table for logical expressions taking arbitrary
 %% amounts of parameters.
-%% Unfortunately this also can't be done in Erlang, since function clauses and
-%% defined pattern matching are an integral part of the language.
-%% I can write a function that generates a table of logic cases.
+%% Once I found out about the apply BIF, I could easily do this part.
+
+general_table(F) when is_function(F) ->
+    {arity, N} = erlang:fun_info(F,arity),
+    Table = logic_table(N),
+    general_table(Table,F).
+
+general_table([H|T],F) ->
+    Res = apply(F,H),
+    ForH = lists:map(fun (X) -> io_lib:format("~6s",[X]) end, H),
+    NicerH = string:join(ForH," "),
+    io:format("~s ~6s~n",[NicerH,Res]),
+    general_table(T,F);
+general_table([],_) ->
+    ok.
+
 
 logic_table(1) ->
     [[true], [false]];
@@ -72,7 +85,7 @@ logic_table(N) ->
     AllTrue ++ AllFalse. % I was considering to use | but it won't work,
                          % I'd need to do it element by element.
 
-%% 3.04 Construct the N-bit grey code which is actually almost the same as 
+%% 3.04 Construct the N-bit grey code which is actually almost the same as
 %% the above.
 
 grey_code(1) ->
