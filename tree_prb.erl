@@ -1,5 +1,6 @@
 -module(tree_prb).
--compile([export_all]).
+-export([istree/1,bal_tree/1,sym_tree/1]).
+%-compile([export_all]).
 
 %% Solutions to the problems concerning binary trees.
 %%
@@ -26,6 +27,24 @@ bal_tree(N) when N rem 2 == 0 ->
 bal_tree(N) ->
     N1 = (N-1) div 2,
     {x,bal_tree(N1),bal_tree(N1)}.
-%% Currently the tree is kind of "packed" (as in lists represent cases). 
+%% Currently the tree is kind of "packed" (as in lists represent cases).
 %% Have not figured out how to do this differently yet.
+%% Possibility: spawn processes to process each sub-tree.
 
+%% 4.03 Symmetric binary trees
+%%
+
+sym_tree(Tree) ->
+    {_, L, R} = Tree,
+    sym_tree(L, R).
+
+sym_tree(nil, X) when not is_atom(X) ->
+    false;
+sym_tree(X, nil) when not is_atom(X) ->
+    false;
+sym_tree(L, L) ->
+    true;
+sym_tree(L, R) ->
+    {LX, LL, LR} = L,
+    {RX, RL, RR} = R,
+    (LX =:= RX) andalso sym_tree(LL, RR) andalso sym_tree(LR, RL).
