@@ -17,19 +17,19 @@ istree(_) -> false.
 
 %% 4.02 Construct completely balanced tree
 %%
+%% for this to work I had to make trees be lists, not tuples.
 
-bal_tree(0) -> nil;
+bal_tree(0) -> [nil];
 bal_tree(1) ->
-    [{x,nil,nil}];
+    [[x,nil,nil]];
 bal_tree(N) when N rem 2 == 0 ->
     [N1,N2] = [N div 2, N div 2 -1],
-    [{x,bal_tree(N1),bal_tree(N2)},{x,bal_tree(N2),bal_tree(N1)}];
+    [ [x, Y, Z] || Y <- bal_tree(N1), Z <- bal_tree(N2)] ++
+    [ [x, Y, Z] || Y <- bal_tree(N2), Z <- bal_tree(N1)];
 bal_tree(N) ->
     N1 = (N-1) div 2,
-    {x,bal_tree(N1),bal_tree(N1)}.
-%% Currently the tree is kind of "packed" (as in lists represent cases).
-%% Have not figured out how to do this differently yet.
-%% Possibility: spawn processes to process each sub-tree.
+    [ [x, Y, Z] || Y <- bal_tree(N1), Z <- bal_tree(N1)].
+
 
 %% 4.03 Symmetric binary trees
 %%
