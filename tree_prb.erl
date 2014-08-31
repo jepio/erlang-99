@@ -42,7 +42,7 @@ sym_tree(nil, X) when not is_atom(X) ->
     false;
 sym_tree(X, nil) when not is_atom(X) ->
     false;
-sym_tree(L, L) ->
+sym_tree(nil, nil) ->
     true;
 sym_tree(L, R) ->
     {LX, LL, LR} = L,
